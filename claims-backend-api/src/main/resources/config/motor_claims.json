@@ -1,0 +1,6 @@
+{
+  "claimTypes": ["MOTOR"],
+  "markets": ["Hong Kong", "Thailand", "Indonesia", "Vietnam", "Philippines"],
+  "currencies": ["SGD", "MYR", "HKD", "THB", "IDR", "VND", "PHP"],
+  "claimCategories": ["Own Damage", "Third Party", "Theft"]
+}

@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: claims-backend-orchestration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 25MB
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:claimsdb}
+    username: ${DB_USER:claims}
+    password: ${DB_PASSWORD:claims}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      properties:
+        spring.json.add.type.headers: true
+    consumer:
+      group-id: claims-orchestration
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.example.claims.common.dto
+        spring.json.value.default.type: com.example.claims.common.dto.ClaimSubmittedEvent
+        spring.json.use.type.headers: true
+
+server:
+  port: ${SERVER_PORT:8081}
+
+claims:
+  kafka:
+    topic: ${CLAIMS_TOPIC:claims.submitted}
+    payment-request-topic: ${CLAIMS_PAYMENT_REQUEST_TOPIC:payments.requested}
+    payment-response-topic: ${CLAIMS_PAYMENT_RESPONSE_TOPIC:payments.processed}
+    mock-payment-delay-ms: ${CLAIMS_MOCK_PAYMENT_DELAY_MS:2000}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+logging:
+  level:
+    root: INFO
+    com.example.claims: DEBUG
