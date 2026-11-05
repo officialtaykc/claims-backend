@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: claims-backend-api
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      properties:
+        spring.json.add.type.headers: false
+        spring.json.trusted.packages: com.example.claims.common.dto
+
+server:
+  port: ${SERVER_PORT:8080}
+
+claims:
+  kafka:
+    topic: ${CLAIMS_TOPIC:claims.submitted}
+
+orchestration:
+  base-url: ${ORCHESTRATION_BASE_URL:http://localhost:8081}

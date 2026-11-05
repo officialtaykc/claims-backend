@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: claims-backend-orchestration
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:claimsdb}
+    username: ${DB_USER:claims}
+    password: ${DB_PASSWORD:claims}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: claims-orchestration
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.example.claims.common.dto
+        spring.json.value.default.type: com.example.claims.common.dto.ClaimSubmittedEvent
+
+server:
+  port: ${SERVER_PORT:8081}
+
+claims:
+  kafka:
+    topic: ${CLAIMS_TOPIC:claims.submitted}
+  # Workbasket: pool of claims officers. New claims are auto-assigned
+  # to the officer with the smallest active workload.
+  officers:
+    - sarah.chen
+    - james.wilson
+    - priya.patel
+    - ahmad.hassan
