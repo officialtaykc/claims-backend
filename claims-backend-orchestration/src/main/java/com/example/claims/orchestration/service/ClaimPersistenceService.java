@@ -2,13 +2,15 @@ package com.example.claims.orchestration.service;
 
 import com.example.claims.common.dto.ClaimSubmittedEvent;
 import com.example.claims.common.enums.ClaimStatus;
+import com.example.claims.orchestration.config.ClaimsProperties;
 import com.example.claims.orchestration.entity.Claim;
 import com.example.claims.orchestration.entity.ClaimStatusHistory;
+import com.example.claims.orchestration.entity.MotorClaimDetail;
+import com.example.claims.orchestration.entity.PropertyClaimDetail;
 import com.example.claims.orchestration.repository.ClaimRepository;
 import com.example.claims.orchestration.repository.ClaimStatusHistoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,10 +41,10 @@ public class ClaimPersistenceService {
 
     public ClaimPersistenceService(ClaimRepository claimRepository,
                                    ClaimStatusHistoryRepository historyRepository,
-                                   @Value("${claims.officers}") List<String> officers) {
+                                   ClaimsProperties claimsProperties) {
         this.claimRepository = claimRepository;
         this.historyRepository = historyRepository;
-        this.officers = officers;
+        this.officers = List.copyOf(claimsProperties.getOfficers());
     }
 
     @Transactional
@@ -74,6 +76,12 @@ public class ClaimPersistenceService {
         claim.setAssignedTo(selectOfficer());
         claim.setCreatedAt(LocalDateTime.now());
         claim.setUpdatedAt(LocalDateTime.now());
+        if (event.getMotorDetails() != null) {
+            claim.setMotorDetails(MotorClaimDetail.from(event.getMotorDetails()));
+        }
+        if (event.getPropertyDetails() != null) {
+            claim.setPropertyDetails(PropertyClaimDetail.from(event.getPropertyDetails()));
+        }
 
         Claim saved = claimRepository.save(claim);
 

@@ -7,7 +7,7 @@ spring:
     password: ${DB_PASSWORD:claims}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     open-in-view: false
     properties:
       hibernate.jdbc.time_zone: UTC
@@ -35,3 +35,14 @@ claims:
     - james.wilson
     - priya.patel
     - ahmad.hassan
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+logging:
+  level:
+    root: INFO
+    com.example.claims: DEBUG

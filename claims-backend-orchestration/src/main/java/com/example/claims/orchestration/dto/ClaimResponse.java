@@ -3,6 +3,10 @@ package com.example.claims.orchestration.dto;
 import com.example.claims.common.enums.InfoRequestStatus;
 import com.example.claims.orchestration.entity.Claim;
 import com.example.claims.orchestration.entity.ClaimInformationRequest;
+import com.example.claims.orchestration.entity.MotorClaimDetail;
+import com.example.claims.orchestration.entity.PropertyClaimDetail;
+import com.example.claims.common.dto.MotorClaimDetails;
+import com.example.claims.common.dto.PropertyClaimDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,6 +41,8 @@ public class ClaimResponse {
     private LocalDateTime updatedAt;
     private List<InfoRequestDto> informationRequests;
     private List<DocumentDto> documents;
+    private MotorClaimDetails motorDetails;
+    private PropertyClaimDetails propertyDetails;
 
     public static ClaimResponse from(Claim claim,
                                      List<ClaimInformationRequest> infoRequests,
@@ -67,7 +73,41 @@ public class ClaimResponse {
         r.updatedAt = claim.getUpdatedAt();
         r.informationRequests = infoRequests.stream().map(InfoRequestDto::from).collect(Collectors.toList());
         r.documents = documents.stream().map(DocumentDto::from).collect(Collectors.toList());
+        r.motorDetails = motorDetailsFrom(claim.getMotorDetails());
+        r.propertyDetails = propertyDetailsFrom(claim.getPropertyDetails());
         return r;
+    }
+
+    private static MotorClaimDetails motorDetailsFrom(MotorClaimDetail entity) {
+        if (entity == null) {
+            return null;
+        }
+        MotorClaimDetails details = new MotorClaimDetails();
+        details.setVehicleRegistration(entity.getVehicleRegistration());
+        details.setVehicleModel(entity.getVehicleModel());
+        details.setDriverName(entity.getDriverName());
+        details.setDriverLicenceNumber(entity.getDriverLicenceNumber());
+        details.setThirdPartyInvolved(entity.getThirdPartyInvolved());
+        details.setPoliceReportNumber(entity.getPoliceReportNumber());
+        details.setRepairWorkshop(entity.getRepairWorkshop());
+        details.setClaimCategory(entity.getClaimCategory());
+        return details;
+    }
+
+    private static PropertyClaimDetails propertyDetailsFrom(PropertyClaimDetail entity) {
+        if (entity == null) {
+            return null;
+        }
+        PropertyClaimDetails details = new PropertyClaimDetails();
+        details.setPropertyType(entity.getPropertyType());
+        details.setPropertyAddress(entity.getPropertyAddress());
+        details.setAffectedAreas(entity.getAffectedAreas());
+        details.setDamageToBuilding(entity.getDamageToBuilding());
+        details.setDamageToContents(entity.getDamageToContents());
+        details.setCauseOfLoss(entity.getCauseOfLoss());
+        details.setEstimatedRepairCost(entity.getEstimatedRepairCost());
+        details.setEstimatedContentsLoss(entity.getEstimatedContentsLoss());
+        return details;
     }
 
     public UUID getId() {
@@ -168,6 +208,14 @@ public class ClaimResponse {
 
     public List<DocumentDto> getDocuments() {
         return documents;
+    }
+
+    public MotorClaimDetails getMotorDetails() {
+        return motorDetails;
+    }
+
+    public PropertyClaimDetails getPropertyDetails() {
+        return propertyDetails;
     }
 
     public static class InfoRequestDto {

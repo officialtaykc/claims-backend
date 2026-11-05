@@ -1,0 +1,8 @@
+{
+  "claimTypes": ["PROPERTY"],
+  "markets": ["Singapore", "Malaysia"],
+  "currencies": ["SGD", "MYR", "HKD", "THB", "IDR", "VND", "PHP"],
+  "propertyTypes": ["Residential", "Commercial"],
+  "causesOfLoss": ["Fire", "Flood", "Leakage", "Storm", "Other"],
+  "affectedAreas": ["Building", "Roof", "Walls", "Flooring", "Kitchen", "Contents", "Other"]
+}

@@ -44,6 +44,8 @@ public class ClaimSubmissionService {
         event.setEstimatedLoss(request.getEstimatedLoss());
         event.setCurrency(request.getCurrency());
         event.setPriority(request.getPriority() == null ? Priority.NORMAL : request.getPriority());
+        event.setMotorDetails(request.getMotorDetails());
+        event.setPropertyDetails(request.getPropertyDetails());
 
         claimEventProducer.publish(event);
 

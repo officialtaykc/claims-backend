@@ -48,6 +48,9 @@ public class ClaimSubmissionRequest {
 
     private Priority priority;
 
+    private MotorClaimDetails motorDetails;
+    private PropertyClaimDetails propertyDetails;
+
     public String getClaimantName() {
         return claimantName;
     }
@@ -158,5 +161,21 @@ public class ClaimSubmissionRequest {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    public MotorClaimDetails getMotorDetails() {
+        return motorDetails;
+    }
+
+    public void setMotorDetails(MotorClaimDetails motorDetails) {
+        this.motorDetails = motorDetails;
+    }
+
+    public PropertyClaimDetails getPropertyDetails() {
+        return propertyDetails;
+    }
+
+    public void setPropertyDetails(PropertyClaimDetails propertyDetails) {
+        this.propertyDetails = propertyDetails;
     }
 }

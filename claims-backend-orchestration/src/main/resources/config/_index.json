@@ -1,0 +1,6 @@
+{
+  "claimTypes": {
+    "MOTOR": "motor_claims.json",
+    "PROPERTY": "property_claims.json"
+  }
+}

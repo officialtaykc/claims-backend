@@ -25,6 +25,8 @@ public class ClaimSubmittedEvent {
     private BigDecimal estimatedLoss;
     private String currency;
     private Priority priority;
+    private MotorClaimDetails motorDetails;
+    private PropertyClaimDetails propertyDetails;
 
     public UUID getEventId() {
         return eventId;
@@ -152,5 +154,21 @@ public class ClaimSubmittedEvent {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    public MotorClaimDetails getMotorDetails() {
+        return motorDetails;
+    }
+
+    public void setMotorDetails(MotorClaimDetails motorDetails) {
+        this.motorDetails = motorDetails;
+    }
+
+    public PropertyClaimDetails getPropertyDetails() {
+        return propertyDetails;
+    }
+
+    public void setPropertyDetails(PropertyClaimDetails propertyDetails) {
+        this.propertyDetails = propertyDetails;
     }
 }

@@ -95,6 +95,34 @@ public class Claim {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @OneToOne(mappedBy = "claim", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private MotorClaimDetail motorDetails;
+
+    @OneToOne(mappedBy = "claim", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private PropertyClaimDetail propertyDetails;
+
+    public MotorClaimDetail getMotorDetails() {
+        return motorDetails;
+    }
+
+    public void setMotorDetails(MotorClaimDetail motorDetails) {
+        this.motorDetails = motorDetails;
+        if (motorDetails != null) {
+            motorDetails.setClaim(this);
+        }
+    }
+
+    public PropertyClaimDetail getPropertyDetails() {
+        return propertyDetails;
+    }
+
+    public void setPropertyDetails(PropertyClaimDetail propertyDetails) {
+        this.propertyDetails = propertyDetails;
+        if (propertyDetails != null) {
+            propertyDetails.setClaim(this);
+        }
+    }
+
     public UUID getId() {
         return id;
     }
