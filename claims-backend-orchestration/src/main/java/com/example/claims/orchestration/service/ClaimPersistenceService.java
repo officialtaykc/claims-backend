@@ -2,7 +2,6 @@ package com.example.claims.orchestration.service;
 
 import com.example.claims.common.dto.ClaimSubmittedEvent;
 import com.example.claims.common.enums.ClaimStatus;
-import com.example.claims.orchestration.config.ClaimsProperties;
 import com.example.claims.orchestration.entity.Claim;
 import com.example.claims.orchestration.entity.ClaimStatusHistory;
 import com.example.claims.orchestration.entity.MotorClaimDetail;
@@ -11,40 +10,28 @@ import com.example.claims.orchestration.repository.ClaimRepository;
 import com.example.claims.orchestration.repository.ClaimStatusHistoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class ClaimPersistenceService {
 
     private static final Logger log = LoggerFactory.getLogger(ClaimPersistenceService.class);
 
-    private static final Set<ClaimStatus> ACTIVE_STATUSES = EnumSet.of(
-            ClaimStatus.NEW,
-            ClaimStatus.IN_REVIEW,
-            ClaimStatus.ADDITIONAL_INFO_REQUIRED,
-            ClaimStatus.PENDING_DECISION,
-            ClaimStatus.APPROVED,
-            ClaimStatus.PARTIALLY_APPROVED,
-            ClaimStatus.SETTLEMENT_PENDING);
-
     private final ClaimRepository claimRepository;
     private final ClaimStatusHistoryRepository historyRepository;
-    private final List<String> officers;
+    private final JdbcTemplate jdbcTemplate;
 
     public ClaimPersistenceService(ClaimRepository claimRepository,
                                    ClaimStatusHistoryRepository historyRepository,
-                                   ClaimsProperties claimsProperties) {
+                                   JdbcTemplate jdbcTemplate) {
         this.claimRepository = claimRepository;
         this.historyRepository = historyRepository;
-        this.officers = List.copyOf(claimsProperties.getOfficers());
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Transactional
@@ -73,7 +60,6 @@ public class ClaimPersistenceService {
         claim.setCurrency(event.getCurrency());
         claim.setPriority(event.getPriority());
         claim.setStatus(ClaimStatus.NEW);
-        claim.setAssignedTo(selectOfficer());
         claim.setCreatedAt(LocalDateTime.now());
         claim.setUpdatedAt(LocalDateTime.now());
         if (event.getMotorDetails() != null) {
@@ -83,41 +69,62 @@ public class ClaimPersistenceService {
             claim.setPropertyDetails(PropertyClaimDetail.from(event.getPropertyDetails()));
         }
 
-        Claim saved = claimRepository.save(claim);
+        Claim saved = claimRepository.saveAndFlush(claim);
 
-        ClaimStatusHistory history = new ClaimStatusHistory();
-        history.setClaim(saved);
-        history.setPreviousStatus(null);
-        history.setNewStatus(ClaimStatus.NEW);
-        history.setChangedBy("system");
-        history.setComment("Claim submitted via Kafka event " + event.getEventId()
-                + "; auto-assigned to " + saved.getAssignedTo());
-        history.setChangedAt(LocalDateTime.now());
-        historyRepository.save(history);
+        recordHistory(saved, null, ClaimStatus.NEW, "system",
+                "Claim submitted via Kafka event " + event.getEventId());
 
-        log.info("Persisted claim claimReference={} id={} status=NEW assignedTo={}",
-                saved.getClaimReference(), saved.getId(), saved.getAssignedTo());
+        String officerEmail = selectNextOfficer();
+        saved.setAssignedTo(officerEmail);
+        saved.setStatus(ClaimStatus.IN_REVIEW);
+        saved.setUpdatedAt(LocalDateTime.now());
+        claimRepository.save(saved);
+        recordHistory(saved, ClaimStatus.NEW, ClaimStatus.IN_REVIEW, officerEmail,
+                "Claim assigned to officer and moved to In Review");
+
+        log.info("Routed claim claimReference={} id={} status=IN_REVIEW assignedTo={}",
+                saved.getClaimReference(), saved.getId(), officerEmail);
     }
 
-    /**
-     * Workbasket allocation: pick the configured officer with the fewest
-     * currently active claims. Ties are broken alphabetically for determinism.
-     */
-    private String selectOfficer() {
-        if (officers == null || officers.isEmpty()) {
-            return null;
+    private String selectNextOfficer() {
+        List<String> officers = jdbcTemplate.queryForList("""
+                SELECT email
+                FROM claims_staff_accounts
+                WHERE UPPER(role) = 'OFFICER' AND is_active = TRUE
+                ORDER BY username
+                """, String.class);
+        if (officers.isEmpty()) {
+            throw new IllegalStateException("Cannot route claim: no active claims officers are configured");
         }
-        Map<String, Long> activeCounts = claimRepository.findAll().stream()
-                .filter(c -> c.getAssignedTo() != null && ACTIVE_STATUSES.contains(c.getStatus()))
-                .collect(Collectors.groupingBy(Claim::getAssignedTo, Collectors.counting()));
 
-        return officers.stream()
-                .min((a, b) -> {
-                    int cmp = Long.compare(
-                            activeCounts.getOrDefault(a, 0L),
-                            activeCounts.getOrDefault(b, 0L));
-                    return cmp != 0 ? cmp : a.compareTo(b);
-                })
-                .orElse(null);
+        Long nextIndex = jdbcTemplate.queryForObject("""
+                SELECT next_index
+                FROM claim_assignment_state
+                WHERE allocation_key = 'CLAIMS_OFFICERS'
+                FOR UPDATE
+                """, Long.class);
+        if (nextIndex == null) {
+            throw new IllegalStateException("Claims officer assignment cursor is not initialized");
+        }
+
+        String selectedOfficer = officers.get((int) (nextIndex % officers.size()));
+        jdbcTemplate.update("""
+                UPDATE claim_assignment_state
+                SET next_index = next_index + 1
+                WHERE allocation_key = 'CLAIMS_OFFICERS'
+                """);
+        return selectedOfficer;
+    }
+
+    private void recordHistory(Claim claim, ClaimStatus previous, ClaimStatus next,
+                               String changedBy, String comment) {
+        ClaimStatusHistory history = new ClaimStatusHistory();
+        history.setClaim(claim);
+        history.setPreviousStatus(previous);
+        history.setNewStatus(next);
+        history.setChangedBy(changedBy);
+        history.setComment(comment);
+        history.setChangedAt(LocalDateTime.now());
+        historyRepository.save(history);
     }
 }

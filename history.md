@@ -578,3 +578,17 @@ Prompt text is reproduced verbatim.
 ### 2026-11-05T14:12:41.757+08:00
 
 > could you then expose them as 2 separate APIs? then help me adjust in my claims-frontend repo as well to cater these new changes
+
+### 2026-11-05T14:38:20.615+08:00
+
+> i plan to create a concept of "My Policies", display it on the home screen, add the "Active" button. these info should also be pulled from database. do ensure the details are passed dynamically to frontend. also under the Submit Claims screen, allow users to select their policy which should autopopulate the fields under Policy and contact details. ensure the name and email address is also dynamically pulled from backend DB, reduce unecessary filling up of information
+
+### 2026-11-05T14:43:31.653+08:00
+
+> can u make the on application startup loading of json into cache to be done by ClaimsApiApplication instead.
+
+### 2026-11-05T14:54:05.052+08:00
+
+> right. now lets improve the workflow abit. currently on submission the claim just remains as a "New" status, and will never progress to "In Review" stage until the officer shifts it. my idea was actually on claims submission create a DB record as New status, then also write into the kafka topic(ready to assign to a claims officer) then the ClaimsOrchestrationApplication will actually do a round-robin allocation strategy to decide this claims will route to which officer, for this simple demo, say i have 2 officers, the probability should be 50/50(dont hardcode this number, should be dynamic depending on number of officers). adjust the claims officer to be 2 officers in the DB instead. modify the flyway script, i can always delete the DB and rerun. no issues.
+>
+> once the orchestration successfully done the routing to assign to the officer, automatically change the claim status into "In Review", pending for officer to follow up. officer can they request for additional documents if necessary from the claimants (change to ADDITIONAL_INFO_REQUIRED or whatver), and once provided, officers can ultimately approve/reject the claims

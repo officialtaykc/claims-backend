@@ -77,7 +77,20 @@ public class ClaimService {
         infoRequest.setResponseMessage(request.getResponseMessage());
         infoRequest.setRequestStatus(InfoRequestStatus.RESPONDED);
         infoRequest.setRespondedAt(LocalDateTime.now());
-        return ClaimResponse.InfoRequestDto.from(infoRequestRepository.save(infoRequest));
+        ClaimInformationRequest savedRequest = infoRequestRepository.save(infoRequest);
+
+        List<ClaimInformationRequest> claimRequests =
+                infoRequestRepository.findByClaimIdOrderByRequestedAtAsc(claim.getId());
+        boolean allRequestsResponded = !claimRequests.isEmpty() && claimRequests.stream()
+                .allMatch(item -> item.getRequestStatus() == InfoRequestStatus.RESPONDED);
+        if (allRequestsResponded && claim.getStatus() == ClaimStatus.ADDITIONAL_INFO_REQUIRED) {
+            claim.setStatus(ClaimStatus.IN_REVIEW);
+            claim.setUpdatedAt(LocalDateTime.now());
+            claimRepository.save(claim);
+            recordHistory(claim, ClaimStatus.ADDITIONAL_INFO_REQUIRED, ClaimStatus.IN_REVIEW,
+                    claim.getClaimantEmail(), "All requested information has been provided");
+        }
+        return ClaimResponse.InfoRequestDto.from(savedRequest);
     }
 
     // ---------- Staff-facing ----------

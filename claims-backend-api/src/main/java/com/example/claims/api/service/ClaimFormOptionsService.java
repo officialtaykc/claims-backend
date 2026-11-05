@@ -1,8 +1,7 @@
-package com.example.claims.orchestration.service;
+package com.example.claims.api.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.example.claims.orchestration.exception.ResourceNotFoundException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -34,11 +33,12 @@ public class ClaimFormOptionsService {
     public void loadOptions() {
         try {
             Map<String, Map<String, String>> index = readJson(INDEX_LOCATION, new TypeReference<>() {});
-            Map<String, String> manifest = index.get("claimTypes");
+            Map<String, String> manifest = index == null ? null : index.get("claimTypes");
             if (manifest == null || manifest.isEmpty()) {
                 throw new IllegalStateException(
                         "Claim form config manifest must define at least one claim type");
             }
+
             Map<String, Map<String, List<String>>> loadedOptions = new LinkedHashMap<>();
             for (Map.Entry<String, String> entry : manifest.entrySet()) {
                 String claimType = entry.getKey();
@@ -60,14 +60,13 @@ public class ClaimFormOptionsService {
                 }
                 if (config.entrySet().stream()
                         .anyMatch(option -> option.getValue() == null || option.getValue().isEmpty())) {
-                    throw new IllegalStateException("Claim form option groups must not be empty in " + fileName);
+                    throw new IllegalStateException(
+                            "Claim form option groups must not be empty in " + fileName);
                 }
+
                 Map<String, List<String>> immutableConfig = new LinkedHashMap<>();
                 config.forEach((key, values) -> immutableConfig.put(key, List.copyOf(values)));
                 loadedOptions.put(claimType, Collections.unmodifiableMap(immutableConfig));
-            }
-            if (loadedOptions.isEmpty()) {
-                throw new IllegalStateException("Claim form config manifest must not be empty");
             }
             optionsByClaimType = Collections.unmodifiableMap(loadedOptions);
         } catch (IOException e) {
@@ -79,7 +78,7 @@ public class ClaimFormOptionsService {
     public Map<String, List<String>> getOptionsByClaimType(String claimType) {
         Map<String, List<String>> options = optionsByClaimType.get(claimType);
         if (options == null) {
-            throw new ResourceNotFoundException("No claim form options configured for claim type: " + claimType);
+            throw new IllegalArgumentException("No claim form options configured for claim type: " + claimType);
         }
         return options;
     }

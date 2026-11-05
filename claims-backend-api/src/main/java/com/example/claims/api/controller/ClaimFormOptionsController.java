@@ -1,6 +1,6 @@
-package com.example.claims.orchestration.controller;
+package com.example.claims.api.controller;
 
-import com.example.claims.orchestration.service.ClaimFormOptionsService;
+import com.example.claims.api.service.ClaimFormOptionsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,12 +10,12 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/internal/config")
-public class InternalConfigController {
+@RequestMapping("/api/config")
+public class ClaimFormOptionsController {
 
     private final ClaimFormOptionsService claimFormOptionsService;
 
-    public InternalConfigController(ClaimFormOptionsService claimFormOptionsService) {
+    public ClaimFormOptionsController(ClaimFormOptionsService claimFormOptionsService) {
         this.claimFormOptionsService = claimFormOptionsService;
     }
 

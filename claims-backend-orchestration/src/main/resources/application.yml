@@ -28,13 +28,6 @@ server:
 claims:
   kafka:
     topic: ${CLAIMS_TOPIC:claims.submitted}
-  # Workbasket: pool of claims officers. New claims are auto-assigned
-  # to the officer with the smallest active workload.
-  officers:
-    - sarah.chen
-    - james.wilson
-    - priya.patel
-    - ahmad.hassan
 
 ---
 spring:
