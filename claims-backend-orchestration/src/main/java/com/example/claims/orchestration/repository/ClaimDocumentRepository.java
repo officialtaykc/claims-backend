@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface ClaimDocumentRepository extends JpaRepository<ClaimDocument, UUID> {
 
     List<ClaimDocument> findByClaimId(UUID claimId);
+
+    java.util.Optional<ClaimDocument> findByIdAndClaimId(UUID id, UUID claimId);
 }

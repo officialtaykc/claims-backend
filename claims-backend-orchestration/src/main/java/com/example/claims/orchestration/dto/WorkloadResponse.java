@@ -23,7 +23,7 @@ public class WorkloadResponse {
         private long pendingDecision;
         private long approved;
         private long rejected;
-        private long settledOrClosed;
+        private long settled;
 
         public OfficerWorkload(String officerName) {
             this.officerName = officerName;
@@ -89,12 +89,12 @@ public class WorkloadResponse {
             this.rejected = rejected;
         }
 
-        public long getSettledOrClosed() {
-            return settledOrClosed;
+        public long getSettled() {
+            return settled;
         }
 
-        public void setSettledOrClosed(long settledOrClosed) {
-            this.settledOrClosed = settledOrClosed;
+        public void setSettled(long settled) {
+            this.settled = settled;
         }
     }
 }

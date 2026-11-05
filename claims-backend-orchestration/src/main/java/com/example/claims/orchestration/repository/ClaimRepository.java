@@ -35,8 +35,7 @@ public interface ClaimRepository extends JpaRepository<Claim, UUID> {
     List<Object[]> countByAssignedTo();
 
     @Query("SELECT COALESCE(SUM(c.estimatedLoss), 0) FROM Claim c WHERE c.status NOT IN "
-            + "(com.example.claims.common.enums.ClaimStatus.CLOSED, "
-            + "com.example.claims.common.enums.ClaimStatus.REJECTED, "
+            + "(com.example.claims.common.enums.ClaimStatus.REJECTED, "
             + "com.example.claims.common.enums.ClaimStatus.SETTLED)")
     BigDecimal sumEstimatedLossOutstanding();
 

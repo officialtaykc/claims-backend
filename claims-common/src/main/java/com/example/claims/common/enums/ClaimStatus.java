@@ -13,8 +13,7 @@ public enum ClaimStatus {
     PARTIALLY_APPROVED,
     REJECTED,
     SETTLEMENT_PENDING,
-    SETTLED,
-    CLOSED;
+    SETTLED;
 
     private static final Map<ClaimStatus, Set<ClaimStatus>> ALLOWED_TRANSITIONS = Map.of(
             NEW, EnumSet.of(IN_REVIEW),
@@ -23,10 +22,9 @@ public enum ClaimStatus {
             PENDING_DECISION, EnumSet.of(APPROVED, PARTIALLY_APPROVED, REJECTED),
             APPROVED, EnumSet.of(SETTLEMENT_PENDING),
             PARTIALLY_APPROVED, EnumSet.of(SETTLEMENT_PENDING),
-            REJECTED, EnumSet.of(CLOSED),
+            REJECTED, EnumSet.noneOf(ClaimStatus.class),
             SETTLEMENT_PENDING, EnumSet.of(SETTLED),
-            SETTLED, EnumSet.of(CLOSED),
-            CLOSED, EnumSet.noneOf(ClaimStatus.class)
+            SETTLED, EnumSet.noneOf(ClaimStatus.class)
     );
 
     public boolean canTransitionTo(ClaimStatus target) {

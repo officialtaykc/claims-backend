@@ -6,8 +6,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "claim_documents", indexes = {
-        @Index(name = "idx_documents_claim_id", columnList = "claim_id")
+@Table(name = "claim_attachments", indexes = {
+        @Index(name = "idx_attachments_claim_id", columnList = "claim_id"),
+        @Index(name = "idx_attachments_information_request_id", columnList = "information_request_id")
 })
 public class ClaimDocument {
 
@@ -22,13 +23,14 @@ public class ClaimDocument {
     @Column(name = "file_name", nullable = false)
     private String fileName;
 
-    @Column(name = "content_type")
+    @Column(name = "content_type", nullable = false)
     private String contentType;
 
-    @Column(name = "storage_path")
-    private String storagePath;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "information_request_id")
+    private ClaimInformationRequest informationRequest;
 
-    @Column(name = "uploaded_by")
+    @Column(name = "uploaded_by", nullable = false)
     private String uploadedBy;
 
     @Column(name = "uploaded_at", nullable = false)
@@ -66,12 +68,12 @@ public class ClaimDocument {
         this.contentType = contentType;
     }
 
-    public String getStoragePath() {
-        return storagePath;
+    public ClaimInformationRequest getInformationRequest() {
+        return informationRequest;
     }
 
-    public void setStoragePath(String storagePath) {
-        this.storagePath = storagePath;
+    public void setInformationRequest(ClaimInformationRequest informationRequest) {
+        this.informationRequest = informationRequest;
     }
 
     public String getUploadedBy() {

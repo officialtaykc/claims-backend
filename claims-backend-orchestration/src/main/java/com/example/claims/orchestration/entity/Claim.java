@@ -80,6 +80,22 @@ public class Claim {
     @Column(name = "assigned_to")
     private String assignedTo;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "recommendation_outcome")
+    private ClaimStatus recommendationOutcome;
+
+    @Column(name = "recommendation_amount", precision = 15, scale = 2)
+    private BigDecimal recommendationAmount;
+
+    @Column(name = "recommendation_reason", columnDefinition = "TEXT")
+    private String recommendationReason;
+
+    @Column(name = "recommendation_by")
+    private String recommendationBy;
+
+    @Column(name = "recommendation_date")
+    private LocalDateTime recommendationDate;
+
     @Column(name = "decision_amount", precision = 15, scale = 2)
     private BigDecimal decisionAmount;
 
@@ -273,6 +289,46 @@ public class Claim {
 
     public void setAssignedTo(String assignedTo) {
         this.assignedTo = assignedTo;
+    }
+
+    public ClaimStatus getRecommendationOutcome() {
+        return recommendationOutcome;
+    }
+
+    public void setRecommendationOutcome(ClaimStatus recommendationOutcome) {
+        this.recommendationOutcome = recommendationOutcome;
+    }
+
+    public BigDecimal getRecommendationAmount() {
+        return recommendationAmount;
+    }
+
+    public void setRecommendationAmount(BigDecimal recommendationAmount) {
+        this.recommendationAmount = recommendationAmount;
+    }
+
+    public String getRecommendationReason() {
+        return recommendationReason;
+    }
+
+    public void setRecommendationReason(String recommendationReason) {
+        this.recommendationReason = recommendationReason;
+    }
+
+    public String getRecommendationBy() {
+        return recommendationBy;
+    }
+
+    public void setRecommendationBy(String recommendationBy) {
+        this.recommendationBy = recommendationBy;
+    }
+
+    public LocalDateTime getRecommendationDate() {
+        return recommendationDate;
+    }
+
+    public void setRecommendationDate(LocalDateTime recommendationDate) {
+        this.recommendationDate = recommendationDate;
     }
 
     public BigDecimal getDecisionAmount() {

@@ -11,13 +11,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class ClaimSubmissionService {
 
     private final ClaimEventProducer claimEventProducer;
-    private final AtomicLong referenceCounter = new AtomicLong();
 
     public ClaimSubmissionService(ClaimEventProducer claimEventProducer) {
         this.claimEventProducer = claimEventProducer;
@@ -55,7 +53,6 @@ public class ClaimSubmissionService {
 
     private String generateClaimReference() {
         String datePart = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
-        long seq = referenceCounter.incrementAndGet();
-        return String.format("CLM-%s-%03d", datePart, seq);
+        return "CLM-" + datePart + "-" + UUID.randomUUID();
     }
 }

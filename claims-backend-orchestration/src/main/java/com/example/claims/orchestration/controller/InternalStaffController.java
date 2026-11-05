@@ -5,8 +5,10 @@ import com.example.claims.common.enums.ClaimType;
 import com.example.claims.orchestration.dto.*;
 import com.example.claims.orchestration.service.ClaimService;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -35,7 +37,7 @@ public class InternalStaffController {
 
     @GetMapping("/claims/{claimReference}")
     public ResponseEntity<ClaimResponse> getClaim(@PathVariable String claimReference) {
-        return ResponseEntity.ok(claimService.getClaimByReference(claimReference));
+        return ResponseEntity.ok(claimService.getStaffClaimByReference(claimReference));
     }
 
     @PatchMapping("/claims/{claimReference}/assign")
@@ -52,11 +54,35 @@ public class InternalStaffController {
         return ResponseEntity.ok(claimService.updateStatus(claimReference, request));
     }
 
-    @PostMapping("/claims/{claimReference}/information-requests")
+    @PostMapping("/claims/{claimReference}/submit-for-decision")
+    public ResponseEntity<ClaimResponse> submitForDecision(
+            @PathVariable String claimReference,
+            @Valid @RequestBody SubmitForDecisionRequest request) {
+        return ResponseEntity.ok(claimService.submitForDecision(claimReference, request));
+    }
+
+    @PostMapping("/claims/{claimReference}/reject-recommendation")
+    public ResponseEntity<ClaimResponse> rejectRecommendation(
+            @PathVariable String claimReference,
+            @Valid @RequestBody RejectRecommendationRequest request) {
+        return ResponseEntity.ok(claimService.rejectRecommendation(claimReference, request));
+    }
+
+    @PostMapping(value = "/claims/{claimReference}/information-requests",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ClaimResponse.InfoRequestDto> createInfoRequest(
             @PathVariable String claimReference,
+            @Valid @RequestPart("request") InfoRequestCreateRequest request,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+        return ResponseEntity.ok(claimService.createInfoRequest(claimReference, request, files));
+    }
+
+    @PostMapping(value = "/claims/{claimReference}/information-requests",
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClaimResponse.InfoRequestDto> createInfoRequestJson(
+            @PathVariable String claimReference,
             @Valid @RequestBody InfoRequestCreateRequest request) {
-        return ResponseEntity.ok(claimService.createInfoRequest(claimReference, request));
+        return ResponseEntity.ok(claimService.createInfoRequest(claimReference, request, null));
     }
 
     @PostMapping("/claims/{claimReference}/decision")

@@ -34,6 +34,11 @@ public class ClaimResponse {
     private String status;
     private String priority;
     private String assignedTo;
+    private String recommendationOutcome;
+    private java.math.BigDecimal recommendationAmount;
+    private String recommendationReason;
+    private String recommendationBy;
+    private LocalDateTime recommendationDate;
     private java.math.BigDecimal decisionAmount;
     private String decisionReason;
     private LocalDateTime decisionDate;
@@ -76,6 +81,19 @@ public class ClaimResponse {
         r.motorDetails = motorDetailsFrom(claim.getMotorDetails());
         r.propertyDetails = propertyDetailsFrom(claim.getPropertyDetails());
         return r;
+    }
+
+    public static ClaimResponse fromStaff(Claim claim,
+                                          List<ClaimInformationRequest> infoRequests,
+                                          List<com.example.claims.orchestration.entity.ClaimDocument> documents) {
+        ClaimResponse response = from(claim, infoRequests, documents);
+        response.recommendationOutcome = claim.getRecommendationOutcome() == null
+                ? null : claim.getRecommendationOutcome().name();
+        response.recommendationAmount = claim.getRecommendationAmount();
+        response.recommendationReason = claim.getRecommendationReason();
+        response.recommendationBy = claim.getRecommendationBy();
+        response.recommendationDate = claim.getRecommendationDate();
+        return response;
     }
 
     private static MotorClaimDetails motorDetailsFrom(MotorClaimDetail entity) {
@@ -182,6 +200,26 @@ public class ClaimResponse {
         return assignedTo;
     }
 
+    public String getRecommendationOutcome() {
+        return recommendationOutcome;
+    }
+
+    public java.math.BigDecimal getRecommendationAmount() {
+        return recommendationAmount;
+    }
+
+    public String getRecommendationReason() {
+        return recommendationReason;
+    }
+
+    public String getRecommendationBy() {
+        return recommendationBy;
+    }
+
+    public LocalDateTime getRecommendationDate() {
+        return recommendationDate;
+    }
+
     public java.math.BigDecimal getDecisionAmount() {
         return decisionAmount;
     }
@@ -280,6 +318,7 @@ public class ClaimResponse {
         private String contentType;
         private String uploadedBy;
         private LocalDateTime uploadedAt;
+        private UUID informationRequestId;
 
         public static DocumentDto from(com.example.claims.orchestration.entity.ClaimDocument d) {
             DocumentDto dto = new DocumentDto();
@@ -288,6 +327,8 @@ public class ClaimResponse {
             dto.contentType = d.getContentType();
             dto.uploadedBy = d.getUploadedBy();
             dto.uploadedAt = d.getUploadedAt();
+            dto.informationRequestId = d.getInformationRequest() == null
+                    ? null : d.getInformationRequest().getId();
             return dto;
         }
 
@@ -309,6 +350,10 @@ public class ClaimResponse {
 
         public LocalDateTime getUploadedAt() {
             return uploadedAt;
+        }
+
+        public UUID getInformationRequestId() {
+            return informationRequestId;
         }
     }
 }
